@@ -54,6 +54,8 @@ class PseudoRand:
             self.set_initial_random()
         self.set_site()
         self.set_grid()
+        self.reset_convergence()
+        self.get_centroid()
 
     def set_initial_random(self):
         self.pts = np.random.rand(self.nbpt, 2)
@@ -91,10 +93,12 @@ class PseudoRand:
         self.boundary = boundary
         self.set_site()
         self.set_grid()
+        self.reset_convergence()
 
     def set_delta(self, delta=0.1):
         self.delta = delta
         self.set_site()
+        self.reset_convergence()
 
     def set_grid(self):
         delta = self.delta
@@ -170,6 +174,11 @@ class PseudoRand:
 
     def iteration(self):
         self.get_centroid()
+
+    def reset_convergence(self):
+        self.dist_mean = np.array([])
+        self.dist_sigma = np.array([])
+        print("reset")
 
     def save_pts(self, datafile):
         np.savetxt(datafile, self.pts, delimiter=',')

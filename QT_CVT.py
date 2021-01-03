@@ -15,6 +15,7 @@ from scipy.spatial import Voronoi, voronoi_plot_2d
 import gui_CVT
 import option_dlg
 from CVT import PseudoRand
+from RDF import rdf_2d, rdf2d
 
 
 class MyOptionDlg(QtWidgets.QDialog):
@@ -37,7 +38,6 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
         self.delta = 0.1
         self.init_filename = None
         self.working_dir = os.getcwd()
-        self.from_scratch = True
 
         self.ed_mainfield.valueChanged.connect(self.set_nbpt)
         self.ed_periode.valueChanged.connect(self.set_nbpt)
@@ -79,7 +79,6 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
         self.bt_working_dir.setText(os.path.basename(self.working_dir))
 
     def set_nbpt(self):
-        self.from_scratch = True
         self.L = self.ed_mainfield.value() * 1e3
         if self.geometry == 'Square':
             self.d = self.ed_periode.value()
@@ -97,15 +96,16 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
         self.myCVT.set_nbpt(self.nbpt)
         self.myCVT.set_initial(self.geometry)
         self.plot_cvt()
+        self.plot_converg()
+        self.plot_rdf()
 
     def set_delta(self):
         self.delta = self.ed_delta.value() / 100.0
         self.myCVT.set_delta(self.delta)
         self.plot_cvt()
+        self.plot_rdf()
 
     def set_boundary(self, value):
-        if not self.from_scratch:
-            self.set_nbpt()
         self.boundary = value
         self.myCVT.set_boundary(value)
         self.set_win_title()
@@ -114,6 +114,7 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
         else:
             self.ed_delta.setEnabled(True)
         self.plot_cvt()
+        self.plot_rdf()
 
     def set_geometry(self, value):
         if value == 'Random':
@@ -147,11 +148,12 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
                 self.geometry = value
             else:
                 self.ed_geometry.setCurrentText(self.geometry)
-        self.from_scratch = True
         self.myCVT.set_initial(self.geometry)
         self.set_nbpt()
         self.set_win_title()
         self.plot_cvt()
+        self.plot_converg()
+        self.plot_rdf()
 
     def set_option(self):
         dlg = MyOptionDlg(self)
@@ -164,11 +166,8 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
             self.save_converg = dlg.ui.ed_save_converg.isChecked()
 
     def start(self):
-        if not self.from_scratch:
-            self.myCVT = PseudoRand(nbpt=self.nbpt, datafile=self.init_filename, initial=self.geometry,
-                                    boundary=self.boundary, delta=self.delta)
-        self.from_scratch = False
         self.iteration = 0
+        self.myCVT.reset_convergence()
         self.bt_start.setEnabled(False)
         self.bt_pause.setEnabled(True)
         self.bt_stop.setEnabled(True)
@@ -180,8 +179,6 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
         self.ed_delta.setEnabled(False)
         self.bt_option.setEnabled(False)
 
-        self.mlp_cvt.canvas.ax.cla()
-        self.mlp_converg.canvas.ax.cla()
         self.timer.start()
 
     def pause(self):
@@ -219,24 +216,34 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
         self.myCVT.iteration()
         self.plot_cvt()
         self.plot_converg()
-        # Trigger the canvas to update and redraw.
-        self.mlp_cvt.canvas.draw()
-        self.mlp_converg.canvas.draw()
+        self.plot_rdf()
         self.myCVT.update()
 
     def plot_cvt(self):
         data = self.myCVT
 
-        mybox = patches.Rectangle((-0.5, -0.5), 1.0, 1.0, linewidth=1, edgecolor='y', facecolor='y', alpha=0.5)
+        mybox = patches.Rectangle((0.0, 0.0), self.L, self.L, linewidth=1, edgecolor='y', facecolor='y', alpha=0.5)
         self.mlp_cvt.canvas.ax.cla()
-        self.mlp_cvt.canvas.ax.plot(data.site[:, 0] - 0.5, data.site[:, 1] - 0.5, 'ro', label='Total')
-        voronoi_plot_2d(Voronoi(data.pts - [0.5, 0.5]), show_vertices=False, line_alpha=0.2, ax=self.mlp_cvt.canvas.ax)
+        self.mlp_cvt.canvas.ax.plot(data.site[:, 0]*self.L, data.site[:, 1]*self.L, 'ro', label='Total')
+        voronoi_plot_2d(Voronoi(data.pts*self.L), show_vertices=False, line_alpha=0.2, ax=self.mlp_cvt.canvas.ax)
         self.mlp_cvt.canvas.ax.add_patch(mybox)
         self.mlp_cvt.canvas.ax.set_aspect('equal', 'box')
-        self.mlp_cvt.canvas.ax.set_xlim(-0.5 - self.delta, 0.5 + self.delta)
-        self.mlp_cvt.canvas.ax.set_ylim(-0.5 - self.delta, 0.5 + self.delta)
+        self.mlp_cvt.canvas.ax.set_xlim(- self.delta*self.L, (1.0 + self.delta)*self.L)
+        self.mlp_cvt.canvas.ax.set_ylim(- self.delta*self.L, (1.0 + self.delta)*self.L)
         self.mlp_cvt.canvas.ax.set_title('CVT iteration %d, nb_pts = %d' % (self.iteration, len(data.pts)))
         self.mlp_cvt.canvas.draw()
+
+    def plot_rdf(self):
+
+        data = self.myCVT.pts
+        # my_rdf, distance = rdf_2d(data, self.nbpt)
+        distance2, rdf2 = rdf2d(data, dr=0.005)
+        self.mlp_rdf.canvas.ax.cla()
+        # self.mlp_rdf.canvas.ax.plot(distance * self.L, my_rdf)
+        self.mlp_rdf.canvas.ax.plot(distance2*self.L, rdf2)
+        self.mlp_rdf.canvas.ax.set_xlim(0.0, 2 * self.ed_periode.value())
+        self.mlp_rdf.canvas.ax.grid(True)
+        self.mlp_rdf.canvas.draw()
 
     def plot_converg(self):
         data = self.myCVT
@@ -244,9 +251,11 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
         y_err = data.dist_sigma * self.L
         # dy = np.abs(np.append(np.nan, np.diff(y)))
         iteration = np.arange(0, len(y), 1)
+        self.mlp_converg.canvas.ax.cla()
         self.mlp_converg.canvas.ax.errorbar(iteration, y, yerr=y_err, fmt='bo-', ecolor='c', capsize=5)
         self.mlp_converg.canvas.ax.grid(True)
         self.mlp_converg.canvas.ax.set_title(r'distance : %d $\pm$ %d' % (y[-1], y_err[-1]))
+        self.mlp_converg.canvas.draw()
 
 
 if __name__ == '__main__':
