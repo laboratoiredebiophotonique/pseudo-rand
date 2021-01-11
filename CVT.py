@@ -78,8 +78,8 @@ class PseudoRand:
         self.pts = np.empty([0, 2])
         dx = self.d
         dy = np.sqrt(3) * self.d / 2
-        nb_x = np.ceil(1.0 / dx).astype('int') - 1
-        nb_y = np.ceil(1.0 / dy).astype('int') - 2
+        nb_x = np.ceil(1.0 / dx).astype('int')  # - 1
+        nb_y = np.ceil(1.0 / dy).astype('int')  # - 2
         x0 = dx / 2
         y0 = dy / 2
 
@@ -179,6 +179,3 @@ class PseudoRand:
         self.dist_mean = np.array([])
         self.dist_sigma = np.array([])
         print("reset")
-
-    def save_pts(self, datafile):
-        np.savetxt(datafile, self.pts, delimiter=',')

@@ -149,7 +149,7 @@
           </size>
          </property>
          <property name="text">
-          <string>Work directory:</string>
+          <string>Backup directory:</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -323,23 +323,6 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="5">
-        <widget class="QPushButton" name="bt_option">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Save options...</string>
-         </property>
-         <property name="icon">
-          <iconset resource="ressources.qrc">
-           <normaloff>:/icons/options</normaloff>:/icons/options</iconset>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="1">
         <widget class="QDoubleSpinBox" name="ed_periode">
          <property name="minimumSize">
@@ -393,6 +376,26 @@
       </layout>
      </widget>
     </item>
+    <item row="3" column="1">
+     <widget class="MplWidget" name="mlp_rdf" native="true">
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(252, 233, 79);</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" rowspan="2">
+     <widget class="MplWidget" name="mlp_cvt" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(252, 233, 79);</string>
+      </property>
+     </widget>
+    </item>
     <item row="1" column="0" colspan="2">
      <widget class="QFrame" name="frame_2">
       <property name="minimumSize">
@@ -429,6 +432,23 @@
        <property name="horizontalSpacing">
         <number>6</number>
        </property>
+       <item row="0" column="0">
+        <widget class="QPushButton" name="bt_start">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Start from scratch</string>
+         </property>
+         <property name="icon">
+          <iconset resource="ressources.qrc">
+           <normaloff>:/icons/start_1</normaloff>:/icons/start_1</iconset>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="2">
         <widget class="QPushButton" name="bt_stop">
          <property name="enabled">
@@ -469,48 +489,11 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QPushButton" name="bt_start">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Start from scratch</string>
-         </property>
-         <property name="icon">
-          <iconset resource="ressources.qrc">
-           <normaloff>:/icons/start_1</normaloff>:/icons/start_1</iconset>
-         </property>
-        </widget>
-       </item>
       </layout>
-     </widget>
-    </item>
-    <item row="2" column="0" rowspan="2">
-     <widget class="MplWidget" name="mlp_cvt" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(252, 233, 79);</string>
-      </property>
      </widget>
     </item>
     <item row="2" column="1">
      <widget class="MplWidget" name="mlp_converg" native="true">
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(252, 233, 79);</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="MplWidget" name="mlp_rdf" native="true">
       <property name="styleSheet">
        <string notr="true">background-color: rgb(252, 233, 79);</string>
       </property>
