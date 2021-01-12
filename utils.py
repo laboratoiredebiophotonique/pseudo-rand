@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-(
 import numpy as np
-
-# import gdspy
+import gdspy
+import os
 from PIL import Image, ImageDraw
 
 
@@ -25,32 +25,31 @@ def create_png(data, scale, ax, ay, pitch):
     return np.asarray(img_png)
 
 
-# def create_GDS(data, L, ax, ay, pitch):
-#     ptS = np.ceil(data * L / pitch).astype('int')
-#     ax = np.ceil(ax / pitch).astype('int')
-#     ay = np.ceil(ay / pitch).astype('int')
-#
-#     myGds = gdspy.GdsLibrary(unit=1e-06)
-#     cell = myGds.new_cell('NP_layer')
-#     print(ptS.shape)
-#     for pt in ptS:
-#         print(pt[0], ', ', pt[1])
-#         NP = gdspy.Round((pt[0], pt[1]), ax, tolerance=0.1)
-#         cell.add(NP)
-#     filename = os.path.splitext(datafile)[0]
-#     fullname = "%s_pitch_%d.gds" % (filename, pitch)
-#     myGds.write_gds(fullname)
-#     return fullname
-#
-#
+def create_gds(data, scale, ax, ay, pitch):
+    pts = np.ceil(data * scale / pitch).astype('int')
+    ax = np.ceil(ax / pitch).astype('int')
+    # ay = np.ceil(ay / pitch).astype('int')
+
+    my_gds = gdspy.GdsLibrary(unit=1e-06)
+    cell = my_gds.new_cell('NP_layer')
+    for pt in pts:
+        print(pt[0], ', ', pt[1])
+        motif = gdspy.Round((pt[0], pt[1]), ax, tolerance=0.1)
+        cell.add(motif)
+    fullname = "gds_pitch_%d.gds" % pitch
+    my_gds.write_gds(fullname)
+    return fullname
+
+
 def fft2d(data):
     h, w = data.shape
-    L = 2 * 2 ** (np.ceil(np.log2(h)).astype('int'))
-    C = 2 * 2 ** (np.ceil(np.log2(w)).astype('int'))
-    my_arr = data[0:h // 2, 0:w // 2]
+    tmp_h = 2 * 2 ** (np.ceil(np.log2(h)).astype('int'))
+    tmp_w = 2 * 2 ** (np.ceil(np.log2(w)).astype('int'))
+    length = max(tmp_h, tmp_w)
+    data_fft = data[0:length, 0:length]
 
-    fft2d = np.fft.fft2(my_arr, (L, C))
-    Te = 25
-    Fe = 1 / Te
-    freq = np.linspace(-Fe / 2, Fe / 2, L)
-    return freq, np.fft.fftshift(np.abs(fft2d))
+    fft_2d = np.fft.fft2(data_fft, (length, length))
+    t_e = 25
+    f_e = 1 / t_e
+    freq = np.linspace(-f_e / 2, f_e / 2, length)
+    return freq, np.fft.fftshift(np.fft.fftshift(fft_2d))

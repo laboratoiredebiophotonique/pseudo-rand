@@ -18,7 +18,7 @@ import gui_dlg_post_option
 from mplwidget import MplWidget
 from CVT import PseudoRand
 from RDF import rdf2d
-from utils import create_png, fft2d  # , create_GDS
+from utils import create_png, fft2d  #, create_gds
 
 
 class MyOptionDlg(QtWidgets.QDialog):
@@ -283,10 +283,10 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
             data = np.vstack((self.rdf_distance, self.rdf_value)).T
             self.save_data(data, "RDF", "end")
         data_png = create_png(self.myCVT.pts, self.L, self.ax, self.ay, self.pitch)
-        data_fft =
         self.set_post_option()
         if self.save_png:
             # filename = "image_" + self.boundary + "_" + self.geometry + "_" + str(self.nbpt) + ".png"
+            # plt.imsave(filename, numpy_array)
             self.win_png.mpl_graph.canvas.ax.set_title("PNG image")
             self.win_png.mpl_graph.canvas.ax.imshow(data_png)
             self.win_png.show()
@@ -294,9 +294,12 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
         if self.save_gds:
             print("GDS = " + self.save_gds.__str__())
         if self.save_fft:
-            self.win_fft.mpl_graph.canvas.ax.set_title("PNG image")
+            data_freq, data_fft = fft2d(data_png)
+            self.win_fft.mpl_graph.canvas.ax.set_title("FFT image")
+            self.win_fft.mpl_graph.canvas.ax.pcolor(np.log(np.abs(data_fft) ** 2))
             self.win_fft.show()
         if self.save_fht:
+            print("FHT = " + self.save_fht.__str__())
             self.win_fht.show()
 
     def update_cvt(self):
