@@ -25,7 +25,7 @@ def create_png(data, scale, ax, ay, pitch):
     return np.asarray(img_png)
 
 
-def create_gds(data, scale, ax, ay, pitch):
+def create_gds(data, scale, ax, ay, pitch, fullname):
     pts = np.ceil(data * scale / pitch).astype('int')
     ax = np.ceil(ax / pitch).astype('int')
     # ay = np.ceil(ay / pitch).astype('int')
@@ -36,7 +36,6 @@ def create_gds(data, scale, ax, ay, pitch):
         print(pt[0], ', ', pt[1])
         motif = gdspy.Round((pt[0], pt[1]), ax, tolerance=0.1)
         cell.add(motif)
-    fullname = "gds_pitch_%d.gds" % pitch
     my_gds.write_gds(fullname)
     return fullname
 

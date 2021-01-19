@@ -5,6 +5,7 @@
 import os
 
 import matplotlib.patches as patches
+from PIL import Image
 import numpy as np
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
@@ -18,7 +19,7 @@ import gui_dlg_post_option
 from mplwidget import MplWidget
 from CVT import PseudoRand
 from RDF import rdf2d
-from utils import create_png, fft2d  #, create_gds
+from utils import create_png, fft2d, create_gds
 
 
 class MyOptionDlg(QtWidgets.QDialog):
@@ -98,8 +99,10 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
         self.save_converg = False
         self.save_png = False
         self.save_gds = False
-        self.save_fft = False
-        self.save_fht = False
+        self.save_fft_img = False
+        self.save_fft_data = False
+        self.save_fht_img = False
+        self.save_fht_data = False
 
         self.win_png = GraphWindow("PNG image")
         self.win_fft = GraphWindow("FFT image")
@@ -220,15 +223,28 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
 
     def set_post_option(self):
         dlg = MyPostOptionDlg(self)
-        dlg.ui.ed_png.setChecked(self.save_png)
+        dlg.ui.ed_PNG.setChecked(self.save_png)
         dlg.ui.ed_GDS.setChecked(self.save_gds)
-        dlg.ui.ed_FFT.setChecked(self.save_fft)
-        dlg.ui.ed_FHT.setChecked(self.save_fht)
+        dlg.ui.ed_FFT_img.setChecked(self.save_fft_img)
+        dlg.ui.ed_FFT_data.setChecked(self.save_fft_data)
+        dlg.ui.ed_FHT_img.setChecked(self.save_fht_img)
+        dlg.ui.ed_FHT_data.setChecked(self.save_fht_data)
+        dlg.ui.ed_mainfield.setText(self.L.__str__())
+        dlg.ui.ed_distance.setText(self.d.__str__())
+        dlg.ui.ed_ax.setValue(self.ax)
+        dlg.ui.ed_ay.setValue(self.ay)
+        dlg.ui.ed_pitch.setValue(self.pitch)
+
         if dlg.exec():
-            self.save_png = dlg.ui.ed_png.isChecked()
+            self.save_png = dlg.ui.ed_PNG.isChecked()
             self.save_gds = dlg.ui.ed_GDS.isChecked()
-            self.save_fft = dlg.ui.ed_FFT.isChecked()
-            self.save_fht = dlg.ui.ed_FHT.isChecked()
+            self.save_fft_img = dlg.ui.ed_FFT_img.isChecked()
+            self.save_fft_data = dlg.ui.ed_FFT_data.isChecked()
+            self.save_fht_img = dlg.ui.ed_FHT_img.isChecked()
+            self.save_fht_data = dlg.ui.ed_FHT_data.isChecked()
+            self.ax = dlg.ui.ed_ax.value()
+            self.ay = dlg.ui.ed_ay.value()
+            self.pitch = dlg.ui.ed_pitch.value()
 
     def start(self):
         self.iteration = 0
@@ -285,22 +301,41 @@ class MyWindow(QtWidgets.QMainWindow, gui_CVT.Ui_MainWindow):
         data_png = create_png(self.myCVT.pts, self.L, self.ax, self.ay, self.pitch)
         self.set_post_option()
         if self.save_png:
-            # filename = "image_" + self.boundary + "_" + self.geometry + "_" + str(self.nbpt) + ".png"
-            # plt.imsave(filename, numpy_array)
+            im = Image.fromarray(data_png)
+            filename = "Image_" + self.boundary + "_" + self.geometry + "_" + str(self.nbpt)
+            full_filename = os.path.join(self.working_dir, filename + ".png")
+            im.save(full_filename)
             self.win_png.mpl_graph.canvas.ax.set_title("PNG image")
             self.win_png.mpl_graph.canvas.ax.imshow(data_png)
             self.win_png.show()
 
         if self.save_gds:
-            print("GDS = " + self.save_gds.__str__())
-        if self.save_fft:
+            filename = "Layout_" + self.boundary + "_" + self.geometry + "_" + str(self.nbpt)
+            full_filename = os.path.join(self.working_dir, filename + ".gds")
+            create_gds(self.myCVT.pts, self.L, self.ax, self.ay, self.pitch, full_filename)
+
+        if self.save_fft_img or self.save_fft_data:
             data_freq, data_fft = fft2d(data_png)
-            self.win_fft.mpl_graph.canvas.ax.set_title("FFT image")
-            self.win_fft.mpl_graph.canvas.ax.pcolor(np.log(np.abs(data_fft) ** 2))
-            self.win_fft.show()
-        if self.save_fht:
-            print("FHT = " + self.save_fht.__str__())
-            self.win_fht.show()
+            if self.save_fft_img:
+                data_fft_img = np.log(np.abs(data_fft) ** 2)
+                self.win_fft.mpl_graph.canvas.ax.set_title("FFT image")
+                self.win_fft.mpl_graph.canvas.ax.pcolor(data_fft_img)
+                self.win_fft.show()
+                im = Image.fromarray(data_fft_img).convert('L')
+                filename = "FFT_" + self.boundary + "_" + self.geometry + "_" + str(self.nbpt)
+                full_filename = os.path.join(self.working_dir, filename + ".png")
+                print(type(data_fft_img))
+                im.save(full_filename)
+            if self.save_fft_data:
+                self.save_data(np.real(data_fft), "FFT_Real")
+                self.save_data(np.imag(data_fft), "FFT_Imag")
+
+        if self.save_fht_img or self.save_fht_data:
+            if self.save_fft_img:
+                print("Save FHT img")
+                self.win_fht.show()
+            if self.save_fft_data:
+                print("Save FHT data")
 
     def update_cvt(self):
         self.iteration += 1
