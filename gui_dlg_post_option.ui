@@ -47,12 +47,15 @@
       <item>
        <widget class="QCheckBox" name="ed_FFT_data">
         <property name="text">
-         <string>Display and save FFT data</string>
+         <string>Save FFT data (Re and Im)</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QCheckBox" name="ed_FHT_img">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Display and save FHT image</string>
         </property>
@@ -60,8 +63,11 @@
       </item>
       <item>
        <widget class="QCheckBox" name="ed_FHT_data">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
-         <string>Display and save FHT data</string>
+         <string>Save FHT data (Re and Im)</string>
         </property>
        </widget>
       </item>
