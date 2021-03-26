@@ -1,0 +1,16 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="icons">
+        <file alias="start_1">icons/start_1.png</file>
+        <file alias="start_2">icons/start_2.png</file>
+        <file alias="pause_1">icons/pause_1.png</file>
+        <file alias="stop_1">icons/stop_1.png</file>
+        <file alias="options">icons/options.svg</file>
+        <file alias="folder_1">icons/folder_1.png</file>
+        <file alias="folder_2">icons/folder_2.png</file>
+        <file alias="info_1">icons/info_1.svg</file>
+        <file alias="info_2">icons/info_2.png</file>
+
+
+    </qresource>
+</RCC>
